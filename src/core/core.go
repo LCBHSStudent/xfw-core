@@ -50,6 +50,10 @@ func main() {
 			}
 			
 			bot.NewMessage(targetId, update.MessageType).Text(handle()).Send()
+		} else if handle, ok := routeByPrefix(&update.Message.Text); ok {
+			if update.MessageType == "group" {
+				handle(update.GroupID, &update.Message.Text)
+			}
 		}
 	}
 }

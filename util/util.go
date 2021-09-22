@@ -2,9 +2,11 @@ package util
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
 	"regexp"
+	"reflect"
 )
 
 func ReadLine(filepath string, re *regexp.Regexp) []string {
@@ -42,4 +44,30 @@ func readLine(reader *bufio.Reader) (string, error) {
         line = append(line, bs...)
     }
     return string(line), err
+}
+
+func GetStructureDataInfo(itf interface{}, structName string) string {
+
+	structType 	:= reflect.TypeOf(itf)
+	if structType.Kind() == reflect.Ptr {
+		structType = structType.Elem()
+	}
+	if structType.Kind() != reflect.Struct {
+		panic("can not use not-structure arguments" +
+				 " in function \"GetStructureDataInfo\"")
+	}
+
+	structValue	:= reflect.ValueOf(itf)
+
+	info := fmt.Sprintf("\t%s {\n", /*Green(*/structName/*)*/)
+
+	for i := 0; i < structType.NumField(); i++ {
+	    // 若想层层展开结构体，针对reflect.Struct进行递归调用
+		typeInfo := structType.Field(i).Name
+		valueInfo := structValue.Field(i)
+
+		info += fmt.Sprintf("\t\t%20s:\t %v\n", typeInfo, valueInfo)
+	}
+	info += "\t}"
+	return info
 }

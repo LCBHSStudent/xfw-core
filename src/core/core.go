@@ -2,11 +2,13 @@ package main
 
 import (
 	"log"
+	"strconv"
 	"strings"
 
 	qqbotapi "github.com/catsworld/qq-bot-api"
+	cqcode "github.com/catsworld/qq-bot-api/cqcode"
 	util "github.com/LCBHSStudent/xfw-core/util"
-	_ "github.com/LCBHSStudent/xfw-core/src/database"
+	"github.com/LCBHSStudent/xfw-core/src/random-gck"
 )
 
 const CQHttpConnKey = "cqhttp-ws-connect"
@@ -18,7 +20,7 @@ func main() {
 	cqhttpConf := util.GetObjectByKey(CQHttpConnKey).(map[interface{}]interface{})
 
 	bot, err = qqbotapi.NewBotAPI("",
-		strings.Join([]string{
+		strings.Join([]string {
 			"ws://",
 			cqhttpConf["ipv4"].(string),
 			":",
@@ -43,17 +45,71 @@ func main() {
 			continue
 		}
 
-		if handle, ok := simpleFuncRouter[update.Message.Text]; ok {
-			targetId := update.GroupID
-			if update.MessageType == "private" {
-				targetId = update.UserID
-			}
-			
-			bot.NewMessage(targetId, update.MessageType).Text(handle()).Send()
-		} else if handle, ok := routeByPrefix(&update.Message.Text); ok {
-			if update.MessageType == "group" {
-				handle(update.GroupID, &update.Message.Text)
+		isGroupMsg := update.MessageType == "group" 
+		isPrivateMsg := update.MessageType == "private"
+		fromIdStr := strconv.FormatInt(update.Message.From.ID, 10)
+
+		targetId := update.GroupID
+		if isPrivateMsg {
+			targetId = update.UserID
+		}
+
+		if bot.IsMessageToMe(*update.Message) {
+			message := make(cqcode.Message, 0)
+			message.Append(&cqcode.At {QQ: fromIdStr})
+			message.Append(&cqcode.Text{Text:"\n"})
+
+			parseRichMessage(randomGck.GenerateSpeech(), &message)
+			bot.SendMessage(update.GroupID, "group", message)
+			continue
+		}
+
+		// random triggered function
+		if handle := randomTrigger(); handle != nil {
+			if isGroupMsg {
+				message := make(cqcode.Message, 0)
+				message.Append(&cqcode.At {QQ: fromIdStr})
+				message.Append(&cqcode.Text{Text:"\n"})
+
+				parseRichMessage(randomGck.GenerateSpeech(), &message)
+				bot.SendMessage(update.GroupID, "group", message)
+				continue
 			}
 		}
+
+		if handle, ok := simpleFuncRouter[update.Message.Text]; ok {
+			bot.NewMessage(targetId, update.MessageType).Text(handle()).Send()
+		
+		} else if handle, ok, msg := routeByPrefix(update.Message.Text); ok >= 0 {
+			if isGroupMsg {
+				handle(update.GroupID, update.Message.Text[ok:])
+				
+				message := make(cqcode.Message, 0)
+				message.Append(&cqcode.At {QQ: fromIdStr})
+				message.Append(&cqcode.Text{Text:"\n"})
+
+				parseRichMessage(msg, &message)
+				bot.SendMessage(update.GroupID, "group", message)
+			}
+		} else {
+			if len(msg) != 0 && isGroupMsg {
+				bot.NewMessage(update.GroupID, "group").
+					At(fromIdStr).
+					NewLine().
+					Text(msg).Send()
+			}
+		}
+	}
+}
+
+func parseRichMessage(raw string, message *cqcode.Message) {
+	richMessage, err := cqcode.ParseMessage(raw)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	for _, v := range richMessage {
+		(*message).Append(v)
 	}
 }

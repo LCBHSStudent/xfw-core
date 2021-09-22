@@ -5,15 +5,26 @@ import (
 	"strings"
 
 	qqbotapi "github.com/catsworld/qq-bot-api"
+	util "github.com/LCBHSStudent/xfw-core/util"
+	_ "github.com/LCBHSStudent/xfw-core/src/database"
 )
 
-const CqHttpHostWS = "127.0.0.1:6700"
+const CQHttpConnKey = "cqhttp-ws-connect"
 
 func main() {
 	var bot *qqbotapi.BotAPI
-
 	var err error
-	bot, err = qqbotapi.NewBotAPI("", strings.Join([]string{"ws://", CqHttpHostWS}, ""), "CQHTTP_SECRET")
+	
+	cqhttpConf := util.GetObjectByKey(CQHttpConnKey).(map[interface{}]interface{})
+
+	bot, err = qqbotapi.NewBotAPI("",
+		strings.Join([]string{
+			"ws://",
+			cqhttpConf["ipv4"].(string),
+			":",
+			cqhttpConf["port"].(string),
+		}, ""), cqhttpConf["secret"].(string),
+	)
 
 	if err != nil {
 		log.Fatal(err)
@@ -30,6 +41,15 @@ func main() {
 	for update := range updates {
 		if update.Message == nil {
 			continue
+		}
+
+		if handle, ok := simpleFuncRouter[update.Message.Text]; ok {
+			targetId := update.GroupID
+			if update.MessageType == "private" {
+				targetId = update.UserID
+			}
+			
+			bot.NewMessage(targetId, update.MessageType).Text(handle()).Send()
 		}
 	}
 }

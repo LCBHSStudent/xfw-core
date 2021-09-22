@@ -1,0 +1,14 @@
+mysql-connect:
+  username: 'root'
+  password: 'password'
+
+  ipv4: '127.0.0.1'
+  port: '3306'
+  db-name: 'xfw'
+
+cqhttp-ws-connect:
+  ipv4: '127.0.0.1'
+  port: '6700'
+  secret: 'CQHTTP_SECRET'
+
+poem-file-path: '../share/poem'

@@ -65,13 +65,13 @@ func main() {
 		}
 
 		// random triggered function
-		if handle := randomTrigger(); handle != nil {
+		if handle := randomTrigger(update.Message.Text); handle != nil {
 			if isGroupMsg {
 				message := make(cqcode.Message, 0)
 				message.Append(&cqcode.At {QQ: fromIdStr})
 				message.Append(&cqcode.Text{Text:"\n"})
 
-				parseRichMessage(randomGck.GenerateSpeech(), &message)
+				parseRichMessage(handle(), &message)
 				bot.SendMessage(update.GroupID, "group", message)
 				continue
 			}

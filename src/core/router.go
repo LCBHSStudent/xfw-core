@@ -34,7 +34,7 @@ func routeByPrefix(msg string) (groupMsgFunc, int, string) {
 	return nil, -1, ""
 }
 
-func randomTrigger() simpleFunc {
+func randomTrigger(msg string) (ret simpleFunc) {
 	bProb, err := rand.Int(rand.Reader, big.NewInt(100))
 	if err != nil {
 		log.Fatal(err)
@@ -42,8 +42,12 @@ func randomTrigger() simpleFunc {
 	prob := int(bProb.Uint64())
 
 	if prob <= 4 {
-		return randomGck.GenerateSpeech
-	} else {
-		return nil
+		randomGck.SaveDescription(-1, msg)		
 	}
+
+	if prob <= 4 {
+		ret = randomGck.GenerateSpeech
+	}
+
+	return
 }

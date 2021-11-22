@@ -34,4 +34,7 @@ pipeline {
     }
 
   }
+  environment {
+    DEV_MODE = '1'
+  }
 }

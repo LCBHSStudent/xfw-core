@@ -41,7 +41,7 @@ func randomTrigger(msg string) (ret simpleFunc) {
 	}
 	prob := int(bProb.Uint64())
 
-	if prob <= 4 {
+	if prob <= 4 || len(msg) > 4 {
 		randomGck.SaveDescription(-1, msg)		
 	}
 

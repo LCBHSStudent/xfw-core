@@ -18,11 +18,21 @@ type groupMsgFunc 		func (int64, string)
 
 var simpleFuncRouter map[string] simpleFunc
 
+var collectRandomly = false
+
 func init() {
 	simpleFuncRouter = make(map[string] simpleFunc)
 	simpleFuncRouter["xfw"] = poet.GetPoetry
 	simpleFuncRouter["XFW"] = poet.GetPoetry
 	simpleFuncRouter["小飞舞"] = poet.GetPoetry
+	simpleFuncRouter["Collect Randomly=ON"] = func () string {
+		collectRandomly = true
+		return "自动收集已启动"
+	}
+	simpleFuncRouter["Collect Randomly=OFF"] = func () string {
+		collectRandomly = false
+		return "自动收集已关闭"
+	}
 }
 
 func routeByPrefix(msg string) (groupMsgFunc, int, string) {
@@ -41,7 +51,7 @@ func randomTrigger(msg string) (ret simpleFunc) {
 	}
 	prob := int(bProb.Uint64())
 
-	if prob <= 4 || len(msg) > 4 {
+	if collectRandomly && (prob <= 4 || len(msg) > 4) {
 		randomGck.SaveDescription(-1, msg)		
 	}
 

@@ -110,6 +110,8 @@ func parseRichMessage(raw string, message *cqcode.Message) {
 	}
 
 	for _, v := range richMessage {
-		(*message).Append(v)
+		if v.FunctionName() != "at" {
+			(*message).Append(v)
+		}
 	}
 }

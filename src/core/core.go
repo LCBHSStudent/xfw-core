@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"strings"
 
+	randomGck "github.com/LCBHSStudent/xfw-core/src/random-gck"
+	util "github.com/LCBHSStudent/xfw-core/util"
 	qqbotapi "github.com/catsworld/qq-bot-api"
 	cqcode "github.com/catsworld/qq-bot-api/cqcode"
-	util "github.com/LCBHSStudent/xfw-core/util"
-	"github.com/LCBHSStudent/xfw-core/src/random-gck"
 )
 
 const CQHttpConnKey = "cqhttp-ws-connect"
@@ -16,11 +16,11 @@ const CQHttpConnKey = "cqhttp-ws-connect"
 func main() {
 	var bot *qqbotapi.BotAPI
 	var err error
-	
+
 	cqhttpConf := util.GetObjectByKey(CQHttpConnKey).(map[interface{}]interface{})
 
 	bot, err = qqbotapi.NewBotAPI("",
-		strings.Join([]string {
+		strings.Join([]string{
 			"ws://",
 			cqhttpConf["ipv4"].(string),
 			":",
@@ -45,7 +45,7 @@ func main() {
 			continue
 		}
 
-		isGroupMsg := update.MessageType == "group" 
+		isGroupMsg := update.MessageType == "group"
 		isPrivateMsg := update.MessageType == "private"
 		fromIdStr := strconv.FormatInt(update.Message.From.ID, 10)
 
@@ -56,8 +56,8 @@ func main() {
 
 		if bot.IsMessageToMe(*update.Message) {
 			message := make(cqcode.Message, 0)
-			message.Append(&cqcode.At {QQ: fromIdStr})
-			message.Append(&cqcode.Text{Text:"\n"})
+			message.Append(&cqcode.At{QQ: fromIdStr})
+			message.Append(&cqcode.Text{Text: "\n"})
 
 			parseRichMessage(randomGck.GenerateSpeech(), &message)
 			bot.SendMessage(update.GroupID, "group", message)
@@ -65,11 +65,11 @@ func main() {
 		}
 
 		// random triggered function
-		if handle := randomTrigger(update.Message.Text); handle != nil {
+		if handle := randomTrigger(update.GroupID, update.Message.Text); handle != nil {
 			if isGroupMsg {
 				message := make(cqcode.Message, 0)
-				message.Append(&cqcode.At {QQ: fromIdStr})
-				message.Append(&cqcode.Text{Text:"\n"})
+				message.Append(&cqcode.At{QQ: fromIdStr})
+				message.Append(&cqcode.Text{Text: "\n"})
 
 				parseRichMessage(handle(), &message)
 				bot.SendMessage(update.GroupID, "group", message)
@@ -79,14 +79,14 @@ func main() {
 
 		if handle, ok := simpleFuncRouter[update.Message.Text]; ok {
 			bot.NewMessage(targetId, update.MessageType).Text(handle()).Send()
-		
+
 		} else if handle, ok, msg := routeByPrefix(update.Message.Text); ok >= 0 {
 			if isGroupMsg {
 				handle(update.GroupID, update.Message.Text[ok:])
-				
+
 				message := make(cqcode.Message, 0)
-				message.Append(&cqcode.At {QQ: fromIdStr})
-				message.Append(&cqcode.Text{Text:"\n"})
+				message.Append(&cqcode.At{QQ: fromIdStr})
+				message.Append(&cqcode.Text{Text: "\n"})
 
 				parseRichMessage(msg, &message)
 				bot.SendMessage(update.GroupID, "group", message)
@@ -102,6 +102,11 @@ func main() {
 	}
 }
 
+var ignoredType = map[string]bool{
+	"at":    true,
+	"reply": true,
+}
+
 func parseRichMessage(raw string, message *cqcode.Message) {
 	richMessage, err := cqcode.ParseMessage(raw)
 	if err != nil {
@@ -110,7 +115,7 @@ func parseRichMessage(raw string, message *cqcode.Message) {
 	}
 
 	for _, v := range richMessage {
-		if v.FunctionName() != "at" {
+		if _, ok := ignoredType[v.FunctionName()]; !ok {
 			(*message).Append(v)
 		}
 	}

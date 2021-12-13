@@ -7,29 +7,30 @@ import (
 	"strings"
 
 	"github.com/LCBHSStudent/xfw-core/src/poet"
-	"github.com/LCBHSStudent/xfw-core/src/random-gck"
+	randomGck "github.com/LCBHSStudent/xfw-core/src/random-gck"
+	"github.com/LCBHSStudent/xfw-core/util"
 )
 
-type simpleFunc 		func () string
-type idGroupFunc 		func (int64, int64)
-type idGroupMsgFunc 	func (int64, int64, string)
-type idMsgFunc 			func (int64, string)
-type groupMsgFunc 		func (int64, string)
+type simpleFunc func() string
+type idGroupFunc func(int64, int64)
+type idGroupMsgFunc func(int64, int64, string)
+type idMsgFunc func(int64, string)
+type groupMsgFunc func(int64, string)
 
-var simpleFuncRouter map[string] simpleFunc
+var simpleFuncRouter map[string]simpleFunc
 
 var collectRandomly = false
 
 func init() {
-	simpleFuncRouter = make(map[string] simpleFunc)
+	simpleFuncRouter = make(map[string]simpleFunc)
 	simpleFuncRouter["xfw"] = poet.GetPoetry
 	simpleFuncRouter["XFW"] = poet.GetPoetry
 	simpleFuncRouter["小飞舞"] = poet.GetPoetry
-	simpleFuncRouter["Collect Randomly=ON"] = func () string {
+	simpleFuncRouter["Collect Randomly=ON"] = func() string {
 		collectRandomly = true
 		return "自动收集已启动"
 	}
-	simpleFuncRouter["Collect Randomly=OFF"] = func () string {
+	simpleFuncRouter["Collect Randomly=OFF"] = func() string {
 		collectRandomly = false
 		return "自动收集已关闭"
 	}
@@ -44,7 +45,7 @@ func routeByPrefix(msg string) (groupMsgFunc, int, string) {
 	return nil, -1, ""
 }
 
-func randomTrigger(msg string) (ret simpleFunc) {
+func randomTrigger(targetId int64, msg string) (ret simpleFunc) {
 	bProb, err := rand.Int(rand.Reader, big.NewInt(100))
 	if err != nil {
 		log.Fatal(err)
@@ -52,11 +53,13 @@ func randomTrigger(msg string) (ret simpleFunc) {
 	prob := int(bProb.Uint64())
 
 	if collectRandomly && (prob <= 4 || len(msg) > 4) {
-		randomGck.SaveDescription(-1, msg)		
+		randomGck.SaveDescription(targetId, msg)
 	}
 
 	if prob <= 4 {
-		ret = randomGck.GenerateSpeech
+		if _, ok := util.GetObjectByKey("group-enable-send-randomgck").(map[int64]bool)[targetId]; ok {
+			ret = randomGck.GenerateSpeech
+		}
 	}
 
 	return

@@ -19,15 +19,15 @@ func init() {
 	poemPath := util.GetObjectByKey("poem-file-path").(string)
 
 	err := filepath.Walk(poemPath,
-    func(path string, info os.FileInfo, err error) error {
-    	if err != nil {
-        	return err
-    	}
-    	if strings.HasSuffix(path, ".pt") {
-			poemList = append(poemList, path)
-		}
-    	return nil
-	})
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if strings.HasSuffix(path, ".pt") {
+				poemList = append(poemList, path)
+			}
+			return nil
+		})
 
 	if err != nil {
 		log.Fatal(err)
@@ -38,11 +38,11 @@ func init() {
 }
 
 // const [13]int
-var lineCountProbability = []int {32, 15, 10, 10, 8, 6, 4, 3, 3, 2, 2, 2, 2}
+var lineCountProbability = []int{32, 15, 10, 10, 8, 6, 4, 3, 3, 2, 2, 2, 2}
 var filter = regexp.MustCompile("(title.*)|(date.*)|([\\w\n].*)")
-	
+
 func GetPoetry() string {
-	
+
 	bProb, err := rand.Int(rand.Reader, big.NewInt(100))
 	if err != nil {
 		log.Fatal(err)
@@ -71,18 +71,17 @@ func GetPoetry() string {
 		fileIdx := int(bFile.Uint64())
 
 		lines := util.ReadLine(poemList[fileIdx], filter)
-		
+
 		bFile, err = rand.Int(rand.Reader, big.NewInt(int64(len(lines))))
 		if err != nil {
 			log.Fatal(err)
 		} else {
 			ret += lines[bFile.Uint64()]
-			if i != lineCount - 1 {
+			if i != lineCount-1 {
 				ret += "\n"
 			}
 		}
 	}
-
 
 	return ret
 }

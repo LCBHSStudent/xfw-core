@@ -16,6 +16,7 @@ import (
 const MySqlConnKey = "mysql-connect"
 
 var db *sql.DB
+
 // sync.Mutex
 
 func init() {
@@ -28,8 +29,8 @@ func init() {
 		":",
 		mysqlConf["password"].(string),
 		"@tcp(",
-			mysqlConf["ipv4"].(string), ":", mysqlConf["port"].(string),
-		")/", 
+		mysqlConf["ipv4"].(string), ":", mysqlConf["port"].(string),
+		")/",
 		mysqlConf["db-name"].(string),
 	}, "")
 
@@ -45,14 +46,13 @@ func init() {
 		log.Printf("Succeed to connect db")
 	}
 
-
 	go func() {
 		sigs := make(chan os.Signal, 1)
 
 		signal.Notify(sigs, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-	
+
 		<-sigs
-        err := db.Close()
+		err := db.Close()
 		if err != nil {
 			log.Printf("%v", err)
 		}
@@ -64,9 +64,9 @@ func init() {
 }
 
 func checkTableExist(table string) bool {
-	query  := "SELECT nsp FROM " + table
+	query := "SELECT nsp FROM " + table
 	_, err := db.Query(query)
-	if  err != nil &&
+	if err != nil &&
 		err.Error() == "Error 1054: Unknown column 'nsp' in 'field list'" {
 		return true
 	} else {
@@ -78,7 +78,7 @@ func CreateTableIfNotExist(table string, tableFormat string) {
 	if checkTableExist(table) {
 		return
 	}
-	
+
 	create := `CREATE TABLE IF NOT EXISTS ` + table + "(" + tableFormat + ");"
 	_, err := db.Exec(create)
 	if err != nil {
@@ -112,7 +112,7 @@ func ExecWriteSql(table string, fields string, args []interface{}) {
 
 	for i := 0; i < len(args); i++ {
 		valuesStr += "?"
-		if i != len(args) - 1 {
+		if i != len(args)-1 {
 			valuesStr += ","
 		} else {
 			valuesStr += ")"
@@ -141,67 +141,67 @@ func ExecReadSql(table string, fields string, cond string, args []interface{}) (
 	}
 
 	rows, err := db.Query(sqlStr, args...)
-    if err != nil {
+	if err != nil {
 		log.Println(err)
-        return
-    }
-    defer rows.Close()
+		return
+	}
+	defer rows.Close()
 
-    var columns []string
-    columns, err = rows.Columns()
-    if err != nil {
-        return
-    }
-    values := make([]interface{}, len(columns))
-    scanArgs := make([]interface{}, len(values))
-    for i := range values {
-        scanArgs[i] = &values[i]
-    }
-    
+	var columns []string
+	columns, err = rows.Columns()
+	if err != nil {
+		return
+	}
+	values := make([]interface{}, len(columns))
+	scanArgs := make([]interface{}, len(values))
+	for i := range values {
+		scanArgs[i] = &values[i]
+	}
+
 	for rows.Next() {
-        err = rows.Scan(scanArgs...)
-        if err != nil {
+		err = rows.Scan(scanArgs...)
+		if err != nil {
 			log.Println(err)
-            return
-        }
+			return
+		}
 
-        ret := make(map[string]interface{})
-        for i, col := range values {
-            if col == nil {
-                ret[columns[i]] = nil
-            } else {
-                switch val := (*scanArgs[i].(*interface{})).(type) {
-                case byte:
-                    ret[columns[i]] = val
-                    break
-                case []byte:
-                    v := string(val)
-                    switch v {
-                    case "\x00":
-                        ret[columns[i]] = 0
-                    case "\x01":
-                        ret[columns[i]] = 1
-                    default:
-                        ret[columns[i]] = v
-                        break
-                    }
-                    break
-                case time.Time:
-                    if val.IsZero() {
-                        ret[columns[i]] = nil
-                    } else {
-                        ret[columns[i]] = val.Format("2006-01-02 15:04:05")
-                    }
-                    break
-                default:
-                    ret[columns[i]] = val
-                }
-            }
-        }
-        list = append(list, ret)
-    }
-    if err = rows.Err(); err != nil {
-        return
-    }
-    return
+		ret := make(map[string]interface{})
+		for i, col := range values {
+			if col == nil {
+				ret[columns[i]] = nil
+			} else {
+				switch val := (*scanArgs[i].(*interface{})).(type) {
+				case byte:
+					ret[columns[i]] = val
+					break
+				case []byte:
+					v := string(val)
+					switch v {
+					case "\x00":
+						ret[columns[i]] = 0
+					case "\x01":
+						ret[columns[i]] = 1
+					default:
+						ret[columns[i]] = v
+						break
+					}
+					break
+				case time.Time:
+					if val.IsZero() {
+						ret[columns[i]] = nil
+					} else {
+						ret[columns[i]] = val.Format("2006-01-02 15:04:05")
+					}
+					break
+				default:
+					ret[columns[i]] = val
+				}
+			}
+		}
+		list = append(list, ret)
+	}
+	if err = rows.Err(); err != nil {
+		return
+	}
+	return
 }

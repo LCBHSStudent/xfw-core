@@ -59,7 +59,11 @@ func main() {
 			message.Append(&cqcode.At{QQ: fromIdStr})
 			message.Append(&cqcode.Text{Text: "\n"})
 
-			parseRichMessage(randomGck.GenerateSpeech(), &message)
+			if !checkUserBlackList(update.Message.From.ID) {
+				parseRichMessage(randomGck.GenerateSpeech(), &message)
+			} else {
+				message.Append(&cqcode.Text{Text: "给我GCK啊！！！！！"})
+			}
 			bot.SendMessage(update.GroupID, "group", message)
 			continue
 		}
@@ -78,17 +82,22 @@ func main() {
 		}
 
 		if handle, ok := simpleFuncRouter[update.Message.Text]; ok {
-			bot.NewMessage(targetId, update.MessageType).Text(handle()).Send()
-
+			if checkUserBlackList(update.Message.From.ID) {
+				bot.NewMessage(targetId, update.MessageType).Text("GCK！！！！！").Send()
+			} else {
+				bot.NewMessage(targetId, update.MessageType).Text(handle()).Send()
+			}
 		} else if handle, ok, msg := routeByPrefix(update.Message.Text); ok >= 0 {
 			if isGroupMsg {
-				handle(update.GroupID, update.Message.Text[ok:])
-
 				message := make(cqcode.Message, 0)
 				message.Append(&cqcode.At{QQ: fromIdStr})
 				message.Append(&cqcode.Text{Text: "\n"})
-
-				parseRichMessage(msg, &message)
+				if !checkUserBlackList(update.Message.From.ID) {
+					handle(update.GroupID, update.Message.Text[ok:])
+					parseRichMessage(msg, &message)
+				} else {
+					message.Append(&cqcode.Text{Text: "给我GCK啊！！！！！"})
+				}
 				bot.SendMessage(update.GroupID, "group", message)
 			}
 		} else {
@@ -118,5 +127,13 @@ func parseRichMessage(raw string, message *cqcode.Message) {
 		if _, ok := ignoredType[v.FunctionName()]; !ok {
 			(*message).Append(v)
 		}
+	}
+}
+
+func checkUserBlackList(userID int64) (bool) {
+	if _, ok := util.GetObjectByKey("user-black-list").(map[int64]bool)[userID]; ok {
+		return true
+	} else {
+		return false
 	}
 }

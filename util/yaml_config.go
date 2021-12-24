@@ -24,17 +24,22 @@ func init() {
 		log.Fatal(err)
 	}
 
-	if _, ok := config["group-enable-send-randomgck"]; ok {
-		mapObject := make(map[int64]bool)
-		originSlice := config["group-enable-send-randomgck"].([]interface{})
-
-		for index := range originSlice {
-			mapObject[int64(originSlice[index].(int))] = false
-		}
-		config["group-enable-send-randomgck"] = mapObject
-	}
+	createIntMapObjectFromList("group-enable-send-randomgck")
+	createIntMapObjectFromList("user-black-list")
 }
 
 func GetObjectByKey(key string) interface{} {
 	return config[key]
+}
+
+func createIntMapObjectFromList(key string) {
+	if _, ok := config[key]; ok {
+		mapObject := make(map[int64]bool)
+		originSlice := config[key].([]interface{})
+
+		for index := range originSlice {
+			mapObject[int64(originSlice[index].(int))] = false
+		}
+		config[key] = mapObject
+	}
 }

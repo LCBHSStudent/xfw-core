@@ -52,11 +52,11 @@ func randomTrigger(targetId int64, msg string) (ret simpleFunc) {
 	}
 	prob := int(bProb.Uint64())
 
-	if collectRandomly && (prob <= 4 || len(msg) > 4) {
+	if collectRandomly && (prob <= 2 || len(msg) > 4) {
 		randomGck.SaveDescription(targetId, msg)
 	}
 
-	if prob <= 4 {
+	if prob < 2 {
 		if _, ok := util.GetObjectByKey("group-enable-send-randomgck").(map[int64]bool)[targetId]; ok {
 			ret = randomGck.GenerateSpeech
 		}

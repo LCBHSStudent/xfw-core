@@ -85,7 +85,12 @@ func main() {
 			if checkUserBlackList(update.Message.From.ID) {
 				bot.NewMessage(targetId, update.MessageType).Text("GCK！！！！！").Send()
 			} else {
-				bot.NewMessage(targetId, update.MessageType).Text(handle()).Send()
+				textChan := make(chan string, 1)
+				go func() {
+					textChan <- handle()
+				}()
+				bot.NewMessage(targetId, update.MessageType).Text(<-textChan).Send()
+				close(textChan)
 			}
 		} else if handle, ok, msg := routeByPrefix(update.Message.Text); ok >= 0 {
 			if isGroupMsg {
@@ -130,7 +135,7 @@ func parseRichMessage(raw string, message *cqcode.Message) {
 	}
 }
 
-func checkUserBlackList(userID int64) (bool) {
+func checkUserBlackList(userID int64) bool {
 	if _, ok := util.GetObjectByKey("user-black-list").(map[int64]bool)[userID]; ok {
 		return true
 	} else {

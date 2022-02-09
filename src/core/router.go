@@ -26,6 +26,8 @@ func init() {
 	simpleFuncRouter["xfw"] = poet.GetPoetry
 	simpleFuncRouter["XFW"] = poet.GetPoetry
 	simpleFuncRouter["小飞舞"] = poet.GetPoetry
+	simpleFuncRouter["龚诗"] = poet.GenerateGongPoem
+	simpleFuncRouter["小万邦"] = poet.GenerateGongPoem
 	simpleFuncRouter["Collect Randomly=ON"] = func() string {
 		collectRandomly = true
 		return "自动收集已启动"

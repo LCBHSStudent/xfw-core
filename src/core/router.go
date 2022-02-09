@@ -19,7 +19,7 @@ type groupMsgFunc func(int64, string)
 
 var simpleFuncRouter map[string]simpleFunc
 
-var collectRandomly = false
+var collectRandomly = true
 
 func init() {
 	simpleFuncRouter = make(map[string]simpleFunc)

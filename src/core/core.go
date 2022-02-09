@@ -85,12 +85,9 @@ func main() {
 			if checkUserBlackList(update.Message.From.ID) {
 				bot.NewMessage(targetId, update.MessageType).Text("GCK！！！！！").Send()
 			} else {
-				textChan := make(chan string, 1)
 				go func() {
-					textChan <- handle()
+					bot.NewMessage(targetId, update.MessageType).Text(handle()).Send()
 				}()
-				bot.NewMessage(targetId, update.MessageType).Text(<-textChan).Send()
-				close(textChan)
 			}
 		} else if handle, ok, msg := routeByPrefix(update.Message.Text); ok >= 0 {
 			if isGroupMsg {

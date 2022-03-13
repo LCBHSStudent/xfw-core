@@ -2,13 +2,13 @@ package main
 
 import (
 	"crypto/rand"
-	"log"
-	"math/big"
-	"strings"
-
 	"github.com/LCBHSStudent/xfw-core/src/poet"
 	randomGck "github.com/LCBHSStudent/xfw-core/src/random-gck"
 	"github.com/LCBHSStudent/xfw-core/util"
+	"log"
+	"math/big"
+	"regexp"
+	"strings"
 )
 
 type simpleFunc func() string
@@ -21,7 +21,19 @@ var simpleFuncRouter map[string]simpleFunc
 
 var collectRandomly = true
 
+var (
+	考研Regexp *regexp.Regexp
+	地域Regexp *regexp.Regexp
+)
+
+func InitRegexps() {
+	考研Regexp = regexp.MustCompile(`(.*?)考研(.*?)`)
+	地域Regexp = regexp.MustCompile(`(.*?)(沙东|山东)(.*?)`)
+}
+
 func init() {
+	InitRegexps()
+
 	simpleFuncRouter = make(map[string]simpleFunc)
 	simpleFuncRouter["xfw"] = poet.GetPoetry
 	simpleFuncRouter["XFW"] = poet.GetPoetry
@@ -36,6 +48,7 @@ func init() {
 		collectRandomly = false
 		return "自动收集已关闭"
 	}
+
 }
 
 func routeByPrefix(msg string) (groupMsgFunc, int, string) {
@@ -45,6 +58,25 @@ func routeByPrefix(msg string) (groupMsgFunc, int, string) {
 		return randomGck.SaveDescription, 7, "已添加形容:" + msg[7:]
 	}
 	return nil, -1, ""
+}
+
+func routeBy学历地域工作出身(msg string) (int, string) {
+	var ret string
+	matchs := 考研Regexp.FindStringSubmatch(msg)
+	if len(matchs) > 0 {
+		ret += "考研的"
+	}
+
+	matchs = 地域Regexp.FindStringSubmatch(msg)
+	if len(matchs) > 0 {
+		ret += "沙东人"
+	}
+
+	if ret == "" {
+		return -1, ""
+	}
+
+	return 7, ret + randomGck.GenerateDescription()
 }
 
 func randomTrigger(targetId int64, msg string) (ret simpleFunc) {

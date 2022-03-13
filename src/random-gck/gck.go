@@ -99,3 +99,28 @@ func GenerateSpeech() string {
 
 	return ret
 }
+
+func GenerateDescription() string {
+	var ret string
+
+	descriptionCount := database.GetTableRowCount(descriptionTable)
+
+	if descriptionCount <= 0 {
+		return ""
+	}
+	temp, err := rand.Int(rand.Reader, big.NewInt(descriptionCount))
+	if err != nil {
+		log.Fatal(err)
+	}
+	descriptionIdx := temp.Int64()
+	result, err := database.ExecReadSql(descriptionTable, "DATA", "ID=?", []interface{}{descriptionIdx + 1})
+
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+
+	ret += result[0]["DATA"].(string)
+
+	return ret
+}

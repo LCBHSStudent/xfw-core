@@ -61,10 +61,7 @@ func RemoveAddress(groupID, msg string) {
 }
 
 func GenerateSpeech() string {
-	var ret string
-
 	addressCount := database.GetTableRowCount(addressTable)
-	descriptionCount := database.GetTableRowCount(descriptionTable)
 
 	if addressCount <= 0 {
 		return ""
@@ -75,34 +72,22 @@ func GenerateSpeech() string {
 	}
 	addressIdx := temp.Int64()
 	result, err := database.ExecReadSql(addressTable, "DATA", "ID=?", []interface{}{addressIdx + 1})
-	if err != nil {
+	if err != nil || len(result) == 0 {
 		log.Println(err)
 		return ""
 	}
-	ret += result[0]["DATA"].(string)
+	ret := result[0]["DATA"].(string)
 
-	if descriptionCount <= 0 {
+	description := GenerateDescription()
+	if description == "" {
 		return ""
 	}
-	temp, err = rand.Int(rand.Reader, big.NewInt(descriptionCount))
-	if err != nil {
-		log.Fatal(err)
-	}
-	descriptionIdx := temp.Int64()
-	result, err = database.ExecReadSql(descriptionTable, "DATA", "ID=?", []interface{}{descriptionIdx + 1})
-
-	if err != nil {
-		log.Println(err)
-		return ""
-	}
-	ret += result[0]["DATA"].(string)
+	ret += description
 
 	return ret
 }
 
 func GenerateDescription() string {
-	var ret string
-
 	descriptionCount := database.GetTableRowCount(descriptionTable)
 
 	if descriptionCount <= 0 {
@@ -115,12 +100,12 @@ func GenerateDescription() string {
 	descriptionIdx := temp.Int64()
 	result, err := database.ExecReadSql(descriptionTable, "DATA", "ID=?", []interface{}{descriptionIdx + 1})
 
-	if err != nil {
+	if err != nil || len(result) == 0 {
 		log.Println(err)
 		return ""
 	}
 
-	ret += result[0]["DATA"].(string)
+	ret := result[0]["DATA"].(string)
 
 	return ret
 }

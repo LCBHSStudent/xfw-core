@@ -2,8 +2,10 @@ package util
 
 import (
 	"bufio"
+	"crypto/rand"
 	"fmt"
 	"log"
+	"math/big"
 	"os"
 	"reflect"
 	"regexp"
@@ -44,6 +46,19 @@ func readLine(reader *bufio.Reader) (string, error) {
 		line = append(line, bs...)
 	}
 	return string(line), err
+}
+
+func GetRandNum(upper int64) int {
+	if upper <= 0 {
+		return 0
+	}
+
+	bProb, err := rand.Int(rand.Reader, big.NewInt(upper))
+	if err != nil {
+		log.Fatal(err)
+	}
+	prob := int(bProb.Uint64())
+	return prob
 }
 
 func GetStructureDataInfo(itf interface{}, structName string) string {

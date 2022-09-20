@@ -2,13 +2,14 @@ package main
 
 import (
 	"crypto/rand"
-	"github.com/LCBHSStudent/xfw-core/src/poet"
-	randomGck "github.com/LCBHSStudent/xfw-core/src/random-gck"
-	"github.com/LCBHSStudent/xfw-core/util"
 	"log"
 	"math/big"
 	"regexp"
 	"strings"
+
+	"github.com/LCBHSStudent/xfw-core/src/poet"
+	randomGck "github.com/LCBHSStudent/xfw-core/src/random-gck"
+	"github.com/LCBHSStudent/xfw-core/util"
 )
 
 type simpleFunc func() string
@@ -24,11 +25,13 @@ var collectRandomly = true
 var (
 	考研Regexp *regexp.Regexp
 	地域Regexp *regexp.Regexp
+	学历Regexp *regexp.Regexp
 )
 
 func InitRegexps() {
 	考研Regexp = regexp.MustCompile(`(.*?)考研(.*?)`)
 	地域Regexp = regexp.MustCompile(`(.*?)(沙东|山东)(.*?)`)
+	学历Regexp = regexp.MustCompile(`(.*?)(北邮|学历)(.*?)`)
 }
 
 func init() {
@@ -72,11 +75,16 @@ func routeBy学历地域工作出身(msg string) (int, string) {
 		ret += "沙东人"
 	}
 
+	matchs = 学历Regexp.FindStringSubmatch(msg)
+	if len(matchs) > 0 {
+		ret += "明明就是个臭带专的，"
+	}
+
 	if ret == "" {
 		return -1, ""
 	}
 
-	return 7, ret + randomGck.GenerateDescription()
+	return 0, ret + randomGck.GenerateDescription()
 }
 
 func randomTrigger(targetId int64, msg string) (ret simpleFunc) {

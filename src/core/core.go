@@ -105,17 +105,16 @@ func main() {
 		} else if ok, msg := routeBy学历地域工作出身(update.Message.Text); ok >= 0 {
 			if isGroupMsg {
 				message := make(cqcode.Message, 0)
-				message.Append(&cqcode.At{QQ: fromIdStr})
-				message.Append(&cqcode.Text{Text: "\n"})
 
-				if !checkUserBlackList(update.Message.From.ID) {
-					handle(update.GroupID, update.Message.Text[ok:])
-					parseRichMessage(msg, &message)
-				} else {
-					message.Append(&cqcode.Text{Text: "给我GCK啊！！！！！"})
+				if _, ok := util.GetObjectByKey("group-enable-send-randomgck").(map[int64]bool)[targetId]; ok {
+					if !checkUserBlackList(update.Message.From.ID) {
+						parseRichMessage(msg, &message)
+					} else {
+						message.Append(&cqcode.Text{Text: "给我GCK啊！！！！！"})
+					}
+
+					bot.SendMessage(update.GroupID, "group", message)
 				}
-
-				bot.SendMessage(update.GroupID, "group", message)
 			}
 
 		} else {

@@ -14,8 +14,10 @@ cqhttp-ws-connect:
 poem-file-path: '../share/poem'
 
 group-enable-send-randomgck:
-  - 832158553
-  - 821663521
+  - 929027715
+
+group-enable-homo-space:
+  - 929027715
 
 user-black-list:
   - 0

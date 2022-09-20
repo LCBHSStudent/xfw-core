@@ -5,6 +5,7 @@ mysql-connect:
   ipv4: '127.0.0.1'
   port: '3306'
   db-name: 'xfw'
+  homo-space-db-name: 'homospace'
 
 cqhttp-ws-connect:
   ipv4: '127.0.0.1'

@@ -23,15 +23,15 @@ var simpleFuncRouter map[string]simpleFunc
 var collectRandomly = true
 
 var (
-	考研Regexp *regexp.Regexp
 	地域Regexp *regexp.Regexp
 	学历Regexp *regexp.Regexp
+	工作Regexp *regexp.Regexp
 )
 
 func InitRegexps() {
-	考研Regexp = regexp.MustCompile(`(.*?)考研(.*?)`)
-	地域Regexp = regexp.MustCompile(`(.*?)(沙东|山东)(.*?)`)
-	学历Regexp = regexp.MustCompile(`(.*?)(北邮|学历)(.*?)`)
+	地域Regexp = regexp.MustCompile(`(.*?)(沙东|北京|百京|成都|长沙|通化|宜春|江西|东百|东北|河南|荷兰|上海|郴州|青岛|新疆|武汉|湖北|天津|山东|白银|贵阳|香港|HK|加拿大|海南|深圳|青浦)(.*?)`)
+	学历Regexp = regexp.MustCompile(`(.*?)(北邮|考研|保研|本科|留学|直博|phd)(.*?)`)
+	工作Regexp = regexp.MustCompile(`(.*?)(智加|字节|图森|泰康|滴滴|tp|银行|很行)(.*?)`)
 }
 
 func init() {
@@ -64,22 +64,50 @@ func routeByPrefix(msg string) (groupMsgFunc, int, string) {
 }
 
 func routeBy学历地域工作出身(msg string) (int, string) {
-	var ret string
-	matchs := 考研Regexp.FindStringSubmatch(msg)
+	var 学历Prefix string
+	var 地域Prefix string
+	var 工作Prefix string
+
+	matchs := 学历Regexp.FindStringSubmatch(msg)
 	if len(matchs) > 0 {
-		ret += "考研的"
+		prob := util.GetRandNum(10)
+		学历Prefix = "明明就是个臭带专的" + matchs[2] + "逼"
+		if prob <= 2 {
+			学历Prefix = "某些特别优秀的" + matchs[2] + "爹"
+		}
 	}
 
 	matchs = 地域Regexp.FindStringSubmatch(msg)
 	if len(matchs) > 0 {
-		ret += "沙东人"
+		prob := util.GetRandNum(10)
+
+		suffix := "人"
+		if prob <= 2 {
+			suffix = "逼"
+		} else if prob >= 9 {
+			suffix = "爹"
+		}
+
+		地域Prefix = matchs[2] + suffix
 	}
 
-	matchs = 学历Regexp.FindStringSubmatch(msg)
+	matchs = 工作Regexp.FindStringSubmatch(msg)
 	if len(matchs) > 0 {
-		ret += "明明就是个臭带专的，"
+		prob := util.GetRandNum(100)
+
+		suffix := "爹"
+		if prob <= 20 {
+			suffix = "逼"
+		}
+
+		if prob >= 95 {
+			suffix += "失业后"
+		}
+
+		工作Prefix = matchs[2] + suffix
 	}
 
+	ret := 学历Prefix + 地域Prefix + 工作Prefix
 	if ret == "" {
 		return -1, ""
 	}

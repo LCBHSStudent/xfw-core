@@ -19,7 +19,7 @@ ARG HOMO_SPACE_VERSION=1.0.0
 RUN cd /xfw && wget https://github.com/LCBHSStudent/xfw-core/releases/download/v${XFW_CORE_VERSION}/xfw-core-v${XFW_CORE_VERSION}.tar.gz &&\
     tar -zxvf ./xfw-core-v${XFW_CORE_VERSION}.tar.gz -C ./xfw-core &&\
     cd /xfw/xfw-core/bin &&\
-    wget https://github.com/LCBHSStudent/homo-space/releases/download/v${HOMO_SPACE_VERSION}/homo-space
+    wget https://github.com/LCBHSStudent/homo-space/releases/download/v${HOMO_SPACE_VERSION}/homo-space && chmod +x homo-space
 
 WORKDIR /xfw
 

@@ -68,6 +68,9 @@ func routeBy学历地域工作出身(msg string) (int, string) {
 	var 地域Prefix string
 	var 工作Prefix string
 
+	cqcodeExp := regexp.MustCompile(`\[CQ:[\s\S]*?\]`)
+	msg = cqcodeExp.ReplaceAllString(msg, "")
+
 	matchs := 学历Regexp.FindStringSubmatch(msg)
 	if len(matchs) > 0 {
 		prob := util.GetRandNum(10)

@@ -26,24 +26,26 @@ func init() {
 	database.CreateTableIfNotExist(descriptionTable, gckTableStr)
 }
 
-func SaveAddress(groupID int64, msg string) {
+func SaveAddress(groupID int64, msg string) string {
 	if len(msg) == 0 {
-		return
+		return ""
 	}
 
 	database.ExecWriteSql(addressTable, "FROM_GROUP,ADD_DATE,DATA", []interface{}{
 		groupID, time.Now().Format("2006-01-02 15:04:05"), msg,
 	})
+	return ""
 }
 
-func SaveDescription(groupID int64, msg string) {
+func SaveDescription(groupID int64, msg string) string {
 	if len(msg) == 0 {
-		return
+		return ""
 	}
 
 	database.ExecWriteSql(descriptionTable, "FROM_GROUP,ADD_DATE,DATA", []interface{}{
 		groupID, time.Now().Format("2006-01-02 15:04:05"), msg,
 	})
+	return ""
 }
 
 func RemoveDescription(groupID int64, msg string) {

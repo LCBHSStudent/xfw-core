@@ -91,16 +91,16 @@ func main() {
 			}
 		} else if handle, ok, msg := routeByPrefix(update.Message.Text); ok >= 0 {
 			if isGroupMsg {
-				message := make(cqcode.Message, 0)
-				message.Append(&cqcode.At{QQ: fromIdStr})
-				message.Append(&cqcode.Text{Text: "\n"})
 				if !checkUserBlackList(update.Message.From.ID) {
-					handle(update.GroupID, update.Message.Text[ok:])
-					parseRichMessage(msg, &message)
-				} else {
-					message.Append(&cqcode.Text{Text: "给我GCK啊！！！！！"})
+					go func() {
+						message := make(cqcode.Message, 0)
+						message.Append(&cqcode.At{QQ: fromIdStr})
+						message.Append(&cqcode.Text{Text: "\n"})
+						msg += handle(update.GroupID, update.Message.Text[ok:])
+						parseRichMessage(msg, &message)
+						bot.SendMessage(update.GroupID, "group", message)
+					}()
 				}
-				bot.SendMessage(update.GroupID, "group", message)
 			}
 		} else if ok, msg := routeBy学历地域工作出身(update.Message.Text); ok >= 0 {
 			if isGroupMsg {

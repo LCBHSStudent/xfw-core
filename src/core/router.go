@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/LCBHSStudent/xfw-core/src/chatgpt"
 	"github.com/LCBHSStudent/xfw-core/src/poet"
 	randomGck "github.com/LCBHSStudent/xfw-core/src/random-gck"
 	"github.com/LCBHSStudent/xfw-core/util"
@@ -16,7 +17,7 @@ type simpleFunc func() string
 type idGroupFunc func(int64, int64)
 type idGroupMsgFunc func(int64, int64, string)
 type idMsgFunc func(int64, string)
-type groupMsgFunc func(int64, string)
+type groupMsgFunc func(int64, string) string
 
 var simpleFuncRouter map[string]simpleFunc
 
@@ -59,6 +60,10 @@ func routeByPrefix(msg string) (groupMsgFunc, int, string) {
 		return randomGck.SaveAddress, 7, "已添加称呼:" + msg[7:]
 	} else if strings.HasPrefix(msg, "形容+") {
 		return randomGck.SaveDescription, 7, "已添加形容:" + msg[7:]
+	} else if strings.HasPrefix(msg, "/ch") {
+		return chatgpt.Communicate, 3, ""
+	} else if strings.HasPrefix(msg, "/set-token") {
+		return chatgpt.SetToken, 10, ""
 	}
 	return nil, -1, ""
 }

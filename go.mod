@@ -20,5 +20,6 @@ require (
 	github.com/golang-infrastructure/go-pointer v0.0.1 // indirect
 	github.com/golang-infrastructure/go-reflect-utils v0.0.0-20221130143747-965ef2eb09c3 // indirect
 	github.com/google/uuid v1.3.0 // indirect
+	github.com/lib/pq v1.10.7
 	gopkg.in/yaml.v2 v2.4.0
 )

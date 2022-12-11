@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	randomGck "github.com/LCBHSStudent/xfw-core/src/random-gck"
 	util "github.com/LCBHSStudent/xfw-core/util"
@@ -92,14 +94,30 @@ func main() {
 		} else if handle, ok, msg := routeByPrefix(update.Message.Text); ok >= 0 {
 			if isGroupMsg {
 				if !checkUserBlackList(update.Message.From.ID) {
-					go func() {
+					go func(groupId int64, messageId int64, data string, base_msg string) {
 						message := make(cqcode.Message, 0)
-						message.Append(&cqcode.At{QQ: fromIdStr})
 						message.Append(&cqcode.Text{Text: "\n"})
-						msg += handle(update.GroupID, update.Message.Text[ok:])
-						parseRichMessage(msg, &message)
-						bot.SendMessage(update.GroupID, "group", message)
-					}()
+
+						text_msg := fmt.Sprintf("[CQ:reply,id=%d]", messageId)
+						text_msg += base_msg
+
+						done := make(chan string, 1)
+						go func(ch chan string, groupId int64, data string) {
+							ch <- handle(groupId, data)
+						}(done, groupId, data)
+
+						select {
+						case result, _ := <-done:
+							text_msg += result
+							close(done)
+						case <-time.After(time.Minute * 2):
+							text_msg += "请求超时啦！"
+						}
+
+						parseRichMessage(text_msg, &message)
+
+						bot.SendMessage(groupId, "group", message)
+					}(update.GroupID, update.Message.MessageID, update.Message.Text[ok:], msg)
 				}
 			}
 		} else if ok, msg := routeBy学历地域工作出身(update.Message.Text); ok >= 0 {
@@ -130,8 +148,7 @@ func main() {
 }
 
 var ignoredType = map[string]bool{
-	"at":    true,
-	"reply": true,
+	"at": true,
 }
 
 func parseRichMessage(raw string, message *cqcode.Message) {

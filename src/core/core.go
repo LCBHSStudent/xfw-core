@@ -96,7 +96,6 @@ func main() {
 				if !checkUserBlackList(update.Message.From.ID) {
 					go func(groupId int64, messageId int64, data string, base_msg string) {
 						message := make(cqcode.Message, 0)
-						message.Append(&cqcode.Text{Text: "\n"})
 
 						text_msg := fmt.Sprintf("[CQ:reply,id=%d]", messageId)
 						text_msg += base_msg
@@ -107,7 +106,7 @@ func main() {
 						}(done, groupId, data)
 
 						select {
-						case result, _ := <-done:
+						case result := <-done:
 							text_msg += result
 							close(done)
 						case <-time.After(time.Minute * 2):

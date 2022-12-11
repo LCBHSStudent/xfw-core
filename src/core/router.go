@@ -60,10 +60,12 @@ func routeByPrefix(msg string) (groupMsgFunc, int, string) {
 		return randomGck.SaveAddress, 7, "已添加称呼:" + msg[7:]
 	} else if strings.HasPrefix(msg, "形容+") {
 		return randomGck.SaveDescription, 7, "已添加形容:" + msg[7:]
-	} else if strings.HasPrefix(msg, "/ch") {
-		return chatgpt.Communicate, 3, ""
+	} else if strings.HasPrefix(msg, "/xfw") {
+		return chatgpt.Communicate, 4, ""
 	} else if strings.HasPrefix(msg, "/set-token") {
 		return chatgpt.SetToken, 10, ""
+	} else if strings.HasPrefix(msg, "/reset-conversation") {
+		return chatgpt.ResetConversation, 19, ""
 	}
 	return nil, -1, ""
 }
